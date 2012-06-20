@@ -1,0 +1,26 @@
+#!/bin/bash
+
+APPLIST=(
+	"ibm-notes8"
+	"thunderbird"
+	"pidgin"
+	)
+for app in "${APPLIST[@]}"; do
+	ps -ef | grep $(app) | grep -v grep | awk '{print $2}'| xargs kill -9
+	/usr/bin/$(app) &
+	echo "$(app) done!"
+done
+
+echo "start thunderbird ... "
+if [ $? -ne 0 ];then
+	echo "Faild"
+fi
+
+/usr/bin/thunderbird &
+echo "start pidgin ... "
+/usr/bin/pidgin &
+echo "start ibm-notes8 ... "
+/usr/bin/ibm-notes8 &
+
+echo "exit"
+exit
