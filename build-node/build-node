@@ -46,7 +46,7 @@ export OVIRT_LOCAL_REPO=file://${OVIRT_CACHE_DIR}/ovirt
 
 echo "Build ovit-node..."
 cd ovirt-node
-./autogen.sh --with-image-minimize
+./autogen.sh --with-image-minimizer
 #EXTRA_RELEASE=.$USER$(date +%s) Not required if you're building an official build
 make publish
 if [ $? -eq 0 ]; then
