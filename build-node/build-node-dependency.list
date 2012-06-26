@@ -5,6 +5,7 @@ appliance-tools-minimizer
 rpm-build
 createrepo
 autogen
+python-setuptools
 
 git
 bash
