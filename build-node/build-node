@@ -49,6 +49,9 @@ cd ovirt-node
 ./autogen.sh --with-image-minimize
 #EXTRA_RELEASE=.$USER$(date +%s) Not required if you're building an official build
 make publish
+if [ $? -eq 0 ]; then
+       exit 1
+fi
 echo "Build ovit-node-iso..."
 cd ../ovirt-node-iso
 ./autogen.sh --with-recipe=$PWD/ovirt-node/recipe --with-build-number=1
