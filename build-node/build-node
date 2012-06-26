@@ -4,12 +4,11 @@
 #Home directory
 #The build dependency list is build-node-dependency.list
 
-set -x
+#set -x
 
 PWD=$(pwd)
-echo $PWD
 if [ "$PWD" != ~ ]; then 
-	echo "Must in Home"
+	echo "Must run it in Home!"
 	exit 1
 fi
 
@@ -40,6 +39,6 @@ cd ovirt-node
 make publish
 echo "Build ovit-node-iso..."
 cd ../ovirt-node-iso
-./autogen.sh --with-recipe=$PWD/ --with-build-number=1
+./autogen.sh --with-recipe=$PWD/ovirt-node/recipe --with-build-number=1
 make iso publish
 
