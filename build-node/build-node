@@ -20,11 +20,23 @@ fi;
 
 
 echo "Cloning ovirt-node..."
-
-git clone http://gerrit.ovirt.org/p/ovirt-node.git
+if [ -d $PWD/ovirt-node ]; then
+        cd ovirt-node 
+        git pull
+        cd ..
+else
+        git clone http://gerrit.ovirt.org/p/ovirt-node.git
+fi
 
 echo "Cloning ovirt-node-iso..."
-git clone http://gerrit.ovirt.org/p/ovirt-node-iso.git
+if [ -d $PWD/ovirt-node-iso ]; then
+        cd ovirt-node-iso
+        git pull
+        cd ..
+else
+        git clone http://gerrit.ovirt.org/p/ovirt-node-iso.git
+fi
+
 
 echo "Create ovirt-cache..."
 mkdir -p ~/ovirt-cache
