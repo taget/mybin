@@ -1,0 +1,7 @@
+#!/bin/sed -rf
+# Remove comments, heading and trailing blanks, and empty lines.
+s/^[[:blank:]]*//
+s/#.*//
+s/[[:blank:]]*$//
+/^$/d
+

@@ -1,0 +1,45 @@
+#!/bin/bash
+#Build process for ovrit node
+#--------- Require ----------#
+#Home directory
+#The build dependency list is build-node-dependency.list
+
+set -x
+
+PWD=$(pwd)
+echo $PWD
+if [ "$PWD" != ~ ]; then 
+	echo "Must in Home"
+	exit 1
+fi
+
+
+builder_dependency_packages="$($PWD/massage_list_file < build-node-dependency.list)"; \
+if ! rpm -q $builder_dependency_packages; then \
+    sudo yum install -y $builder_dependency_packages; \
+fi;
+
+
+echo "Cloning ovirt-node..."
+
+git clone http://gerrit.ovirt.org/p/ovirt-node.git
+
+echo "Cloning ovirt-node-iso..."
+git clone http://gerrit.ovirt.org/p/ovirt-node-iso.git
+
+echo "Create ovirt-cache..."
+mkdir -p ~/ovirt-cache
+
+export OVIRT_CACHE_DIR=~/ovirt-cache
+export OVIRT_LOCAL_REPO=file://${OVIRT_CACHE_DIR}/ovirt
+
+echo "Build ovit-node..."
+cd ovirt-node
+./autogen.sh --with-image-minimize
+#EXTRA_RELEASE=.$USER$(date +%s) Not required if you're building an official build
+make publish
+echo "Build ovit-node-iso..."
+cd ../ovirt-node-iso
+./autogen.sh --with-recipe=$PWD/ --with-build-number=1
+make iso publish
+
