@@ -1,0 +1,9 @@
+ git add scripts/
+ git commit -am "Add-igor-helper-scripts" --signoff
+ git add tests/
+ git commit -am "Add-igor-test-plan-suite-for-itme-and-frobisher" --signoff
+ git add confs/
+ git commit -am "Add-configuration-files-for-igord" --signoff
+ git add README 
+ git commit -am "Add-README-file-for-frobisher_bvt-repository" --signoff
+
