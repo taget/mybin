@@ -25,7 +25,7 @@ EOF
 function kill_bin()
 { 
   APP=$1
-  ps -ef | grep ${APP} | grep -v grep | awk '{print $2}' | xargs kill -9 >/dev/null 2&1
+  ps -ef | grep ${APP} | grep -v grep | awk '{print $2}' | xargs kill -9 >/dev/null 2>&1
   return $?
 }
 
@@ -68,11 +68,22 @@ function maintain_app()
   for app in "${APPLIST[@]}"; do
     ps -ef | grep ${app} | grep -v "grep" >/dev/null 2>&1
     if [[ ! $? -eq 0 ]]; then
+        echo "starting ${app}"
         run_bin ${app}
     fi
   done
 }
-while getopts "hsrlm" OPTION
+
+function kill_all()
+{
+  for app in "${APPLIST[@]}"; do
+    echo "killing ${app}"
+    kill_bin $app
+  done
+
+}
+
+while getopts "hsrlmk" OPTION
 do
      case $OPTION in
          h)
@@ -90,6 +101,9 @@ do
             ;;
          m)
             maintain_app
+            ;;
+         k)
+            kill_all
             ;;
          ?)
              usage
