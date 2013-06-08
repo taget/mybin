@@ -28,3 +28,10 @@ function _get_field
    return 0
 }
 
+function _get_str_len()
+{
+    local str=$1
+    len=$(expr length ${str})
+    echo ${len}
+    return 0
+}

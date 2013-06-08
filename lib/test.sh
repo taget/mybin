@@ -14,3 +14,6 @@ echo ${filed}
 
 # test remove line number
 remove_line_number ./tmp
+
+# test _get_str_len
+_get_str_len "pure-1.2.33.iso" 
