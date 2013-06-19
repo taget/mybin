@@ -16,4 +16,11 @@ echo ${filed}
 remove_line_number ./tmp
 
 # test _get_str_len
-_get_str_len "pure-1.2.33.iso" 
+len=$(_get_str_len "pure-1.2.33.iso")
+
+testiso=abslfjisf-fef-fefef-fefe.1.2.33.test.iso
+iso_len=$(expr length ${testiso})
+    if [[ ${iso_len} -gt 20 ]]; then
+        short_iso="pure-"$(echo ${testiso} |\
+                  egrep -o [0-9]+.[0-9]+.[0-9]+).test.iso
+    fi
