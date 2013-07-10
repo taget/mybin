@@ -21,7 +21,7 @@ function main()
    
     if [[ ! -d ${DIR} ]]; then
         mkdir ${DIR}
-    fi 
+    fi
     local TOTAL=0
     local TOTAL_DOWNLOADS=0
     local NODOWNLOAD_RPM=
