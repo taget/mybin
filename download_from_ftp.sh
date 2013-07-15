@@ -11,6 +11,7 @@ function download_rpm()
 {
     BASEURL="ftp://ftp3.linux.ibm.com/redhat/yum/6/server/updates/x86_64/RPMS/"
     RPM=$1
+    echo "Downloading ${RPM} ..."
     wget -q  --user="${USERID}" --password="${PASSWD}" ${BASEURL}${RPM}
 }
 
@@ -34,11 +35,13 @@ function main()
             TOTAL_DOWNLOADS=$((TOTAL_DOWNLOADS+1))
             mv ${rpm_file} ${DIR}
         else
-            NODOWNLOAD_RPM=${NODOWNLOAD_RPM}"\r\n"${rpm}
+            NODOWNLOAD_RPM=${NODOWNLOAD_RPM}"\n"${rpm}
         fi
     done
     echo "-----"
     echo "${TOTAL_DOWNLOADS}/${TOTAL} file(s) download"
+    echo "No downloads rpm lists:"
+    echo -e "${NODOWNLOAD_RPM}"
 }
 
 main $@
