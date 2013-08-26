@@ -13,7 +13,7 @@ mkdir -p $DIR_1
 mkdir -p $DIR_2
 mkdir -p $DIR_3 
 
-mount -o loop $1 $DIR_1
-mount -o loop $DIR_1/LiveOS/squashfs.img $DIR_2
+mount -o loop $1 $DIR_1 && \
+mount -o loop $DIR_1/LiveOS/squashfs.img $DIR_2 && \
 mount -o loop $DIR_2/LiveOS/ext3fs.img $DIR_3
 
