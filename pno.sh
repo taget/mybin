@@ -6,6 +6,7 @@ APPLIST=(
 	"pidgin"
 	"goldendict"
         "qq"
+        "google-chrome"
 )
 
 usage() {
