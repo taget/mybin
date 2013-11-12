@@ -2,7 +2,7 @@
 # This script will reboot the os by given $1 immip, $2 username, $3 password
 set ip [lindex $argv 0]
 set username [lindex "qiaoly@cn.ibm.com"]
-set password [lindex "jimmy@2bm"]
+set password [lindex "jimmy@3bm"]
 
 #login 
 spawn telnet $ip
