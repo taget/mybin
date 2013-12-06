@@ -1,11 +1,9 @@
 #!/bin/bash
 
 APPLIST=(
-	"notes"
 	"thunderbird"
 	"pidgin"
 	"goldendict"
-        "qq"
         "google-chrome"
 )
 
@@ -21,6 +19,12 @@ usage: $0 [options]
 Example:
 $0 
 EOF
+}
+function pull_git()
+{
+    cd $1
+    git pull
+    cd -
 }
 # kill $1
 function kill_bin()
