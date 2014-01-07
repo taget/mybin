@@ -7,6 +7,11 @@ APPLIST=(
         "google-chrome"
 )
 
+SRC_LIST=(
+         "/home/qiaoliyong/sda/code/libvirt"
+         "/home/qiaoliyong/sda/code/qemu"
+         )
+
 usage() {
 cat << EOF
 usage: $0 [options]
@@ -20,11 +25,25 @@ Example:
 $0 
 EOF
 }
+# pull git
 function pull_git()
 {
     cd $1
     git pull
     cd -
+}
+
+# pull all git in SRC_LIST
+function pull_all_git()
+{
+    for src in "${SRC_LIST[@]}"; do
+         pull_git ${src}
+    done
+}
+function extr_app()
+{
+    sudo libvirtd -d
+    sudo virsh start xp
 }
 # kill $1
 function kill_bin()
@@ -122,3 +141,5 @@ if [[ $# -eq 0 ]]; then
   maintain_app
 fi
 
+pull_all_git
+extr_app

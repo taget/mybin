@@ -123,7 +123,7 @@ function pars_arg()
     fi
     SPEC_FILE=./${PKG_NAME}/${PKG_NAME}.spec
     if [[ $type == "r" ]]; then
-        COPY_DIR="${COPY_DIR}/extra-packages/${ARCH}/"
+        COPY_DIR="${COPY_DIR}/extra-packages/${ARCH}/build${Release}/"
     else
         COPY_DIR="${COPY_DIR}/PowerKVM/updates/0.${Release}/"
     fi
