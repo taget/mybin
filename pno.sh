@@ -142,4 +142,5 @@ if [[ $# -eq 0 ]]; then
 fi
 
 pull_all_git
-extr_app
+python /home/qiaoliyong/Downloads/goagent-goagent-6287469/local/proxy.py
+#extr_app

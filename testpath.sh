@@ -12,7 +12,7 @@ SUPPORT_DIR=$(find $HOME -maxdepth 1 -name "pbuild-*" -print | awk -F \/ '{print
 function scp_patch()
 {
     if [[ $REMOTE == "59" ]]; then
-        REMOTE_DIR=taget@9.181.129.59:/home/taget/pbuild5/pbuild-
+        REMOTE_DIR=taget@9.181.129.59:/home/taget/pbuild7/pbuild-
     else
         REMOTE_DIR=root@kop1.austin.ibm.com:/data/taget/pbuild-
     fi
