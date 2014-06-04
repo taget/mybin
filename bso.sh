@@ -1,8 +1,9 @@
 #!/usr/bin/expect -f
-# This script will reboot the os by given $1 immip, $2 username, $3 password
+# This script will try to telnet $1
+#
 set ip [lindex $argv 0]
-set username [lindex "qiaoly@cn.ibm.com"]
-set password [lindex "jimmy@5bm"]
+set username "$env(IBMUSER)"
+set password "$env(IBMPASSWORD)"
 
 #login 
 spawn telnet $ip
