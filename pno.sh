@@ -142,5 +142,11 @@ if [[ $# -eq 0 ]]; then
 fi
 
 pull_all_git
+
+
+/home/qiaoliyong/mybin/bso.sh ltcphx.austin.ibm.com
+/home/qiaoliyong/mybin/bso.sh 9.181.129.110
+sleep 10
+ssh -qTfnN -D 8080 qiaoly@ltcphx.austin.ibm.com 
 python /home/qiaoliyong/Downloads/goagent-goagent-6287469/local/proxy.py
 #extr_app

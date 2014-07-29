@@ -64,8 +64,8 @@ def get_summary(url):
 		print "[%d] <%s>,%s,%s"%(icount, blog_name, blog_url,\
 		                                 blog_visit)
 		print "----------------------"
-	print "totale [%d] paper" % icount
-	print "totale visits [%d]" % total_visits
+	print "total [%d] paper" % icount
+	print "total visits [%d]" % total_visits
 	print "average visits [%d]" % (total_visits/icount)
 	#listitmes =  soup.find_all("span", role="listitem")
 	
