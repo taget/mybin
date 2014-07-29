@@ -2,7 +2,7 @@
 
 # send a curl http request to get token id from keystone first.
 # then send a curl request to api server, support post/get
-# ps : change get_token_id 's default url to adopt your keystone service
+# ps : change get_token_id 's default url to adapt your keystone service
 #      change the default password in get_token_id
 
 import sys
@@ -62,7 +62,7 @@ curl -i '%s' -X PUT -H "Accept: application/json" -H "Content-Type: application/
 
 def usage():
     print '''usage:
-python ./test.py http_req [post_data]
+python ./nova-api.py http_req [post_data]
 ps: change the default password in get_token_id in test.py
 '''
 
