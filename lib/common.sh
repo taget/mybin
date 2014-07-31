@@ -35,3 +35,15 @@ function _get_str_len()
     echo ${len}
     return 0
 }
+
+# get the package name
+# _get_package_name python-cinderclient-1.0.9.tar.gz
+# _get_package_name python-cinderclient-1.0.tar.gz
+# _get_package_name python-cinderclient-1.0.whel
+# return python-cinderclient
+function _get_package_name()
+{
+    locak str=$1
+    dir=$(echo $str | sed 's/[-][0-9.]*\.[a-z]*\.[a-z]*$//')
+    echo $dir
+}
