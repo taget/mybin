@@ -47,11 +47,18 @@ def exec_url(url = 'http://cloudcontroller:8774/v3/servers/detail', id=None, pos
 curl -i '%s' -X GET -H "Accept: application/json" -H "User-Agent: python-novaclient" -H "X-Auth-Project-Id: admin" -H "X-Auth-Token: %s"
 ''' % (url, id)
     # post url
-    if post:
-        cmd = '''
+    if post is not None:
+        if post == 'd':
+
+            cmd = '''
+curl -i '%s' -X DELETE -H "Accept: application/json" -H "Content-Type: application/json" -H "User-Agent: python-novaclient" -H "X-Auth-Project-Id: admin" -H "X-Auth-Token: %s"
+''' % (url, id)
+
+        else:
+            cmd = '''
 curl -i '%s' -X PUT -H "Accept: application/json" -H "Content-Type: application/json" -H "User-Agent: python-novaclient" -H "X-Auth-Project-Id: admin" -H "X-Auth-Token: %s" -d '%s'
 ''' % (url, id , post)
-        
+
     print '-------'
     print cmd
     print '-------'
@@ -62,8 +69,16 @@ curl -i '%s' -X PUT -H "Accept: application/json" -H "Content-Type: application/
 
 def usage():
     print '''usage:
-python ./nova-api.py http_req [post_data]
-ps: change the default password in get_token_id in test.py
+python ./nova-api.py http_req [post_data or 'd']
+
+support get/post/delete method.
+for example:
+
+    get: ./nova-api.py http://url
+    post: ./nova-api.py http://url "{request {key=val,...}}"
+    delete: ./nova-api.py http://url d
+
+ps: need change the default password in get_token_id
 '''
 
 if len(sys.argv) < 2 or len(sys.argv) > 3:
