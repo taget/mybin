@@ -4,7 +4,8 @@ APPLIST=(
 	"thunderbird"
 	"pidgin"
 	"goldendict"
-        "google-chrome"
+    "google-chrome"
+    "eclipse"
 )
 
 SRC_LIST=(
