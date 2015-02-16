@@ -19,7 +19,7 @@ CHANGED_FILES=$(git status -s | awk '{if ($1 == "M"){print $2}}' | sed ':a;N;$!b
 
 # check pep8
 
-if [ -n "$CHANGED_FILES" ]; then
+if [[ -n "$CHANGED_FILES" ]]; then
     tox -e pep8 "$CHANGED_FILES" | tee b.log
     # git add
     if [ "${PIPESTATUS[0]}" -ne 0 ]; then
