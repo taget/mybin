@@ -43,7 +43,25 @@ function _get_str_len()
 # return python-cinderclient
 function _get_package_name()
 {
-    locak str=$1
+    local str=$1
     dir=$(echo $str | sed 's/[-][0-9.]*\.[a-z]*\.[a-z]*$//')
     echo $dir
 }
+
+# given a string which is the variable name
+# return the real variable value
+# var='this is the real value'
+# var_name='var'
+# given you var_name(actually, a string)
+# return the value of var_name
+
+function get_real_var_name()
+{
+    local var=$1
+    echo $@!var}
+
+    # or
+    # eval ret=\$$var
+}
+
+
