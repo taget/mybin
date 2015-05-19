@@ -1,0 +1,51 @@
+---
+
+- name: prepare an new install environment
+  hosts: "{{ host }}"
+  sudo: True 
+  gather_facts: False
+  remote_user: taget
+
+  tasks:
+    - name: hahaha {{ host }}
+      command: echo "This is a hahaha to {{ host }}. "
+
+    # copy a apt conf for fisrt time using proxy
+    - name: copy apt.conf
+      template: src=src/apt.conf dest=/etc/apt/apt.conf
+
+#    - name: update apt cache
+#      apt:
+#        update_cache: yes
+
+    - name: copy .vimrc
+      template: src=src/.vimrc dest=/home/taget/.vim/
+
+    - name: copy .gitconfig
+      template: src=src/.gitconfig dest=/home/taget/.gitconfig
+
+    - name: copy iptable rule
+      template:
+        src: src/configur_iptable.sh
+        dest: /tmp
+        mode: 0755
+
+    - name: apply ipatble rule
+      command: /tmp/configur_iptable.sh
+
+    - name: install necessary package
+      apt: 
+        pkg: "{{ item }}"
+        state: latest
+      with_items:
+        - git
+        - vim
+
+    # copy redsocks config file and restart redsocks
+    - name: copy redsocks.conf to {{ host }}
+      template: src=src/redsocks.conf dest=/etc/
+
+    - name: restart redsocks
+      service:
+        name: redsocks
+        state: restarted

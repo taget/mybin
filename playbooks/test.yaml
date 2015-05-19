@@ -1,0 +1,67 @@
+---
+
+- name: test playbook
+  hosts: all
+  sudo: True
+  gather_facts: True
+
+  vars:
+    x: "xx"
+    y: "yy"
+    foo: "foo"
+
+  vars_files:
+    - "vars/common.yml"
+
+#  remote_user: taget
+
+  tasks:
+    - name: echo something to /root/123
+      shell: echo {{ ansible_hostname }} >> /root/123
+      register: touch_result
+      ignore_errors: True
+
+    - command: /bin/false
+      register: result
+      ignore_errors: True
+
+    - command: echo "failedfailedfailedfailedfailedfailedfailed       "
+      when: result|failed
+
+    - command: /bin/something_else
+      when: result|success
+
+    - command: /bin/still/something_else
+      when: result|skipped
+
+    - name: cat
+      shell: cat /root/123
+      when: touch_result.rc == 0 and (ansible_distribution == 'Ubuntu' or
+            ansible_distribution_version == '14.04') 
+
+    - name: copy some sh to remote server
+      template: src=test.sh dest=/home/taget
+
+    - name: execute remote shell
+      shell: bash test.sh
+      register: system_date
+      with_items: system_date.stdout_lines
+
+    - shell: echo "I've got '{{ foo }}' and am not afraid to use it!"
+      when: foo is defined
+
+    - shell: echo "'bar' is not defined"
+      when:  bar is not defined
+
+    - shell: echo "I am '{{ user }}'"
+      when:  user is defined
+
+    - shell: echo {{ test_host }}
+
+    # I want to setup my local facts
+    - name: create directory for ansible custom facts
+      file: state=directory recurse=yes path=/etc/ansible/facts.d
+    - name: install custom impi fact
+      copy: src=ipmi.fact dest=/etc/ansible/facts.d
+    - name: re-read facts after adding custom fact
+      setup: filter=ansible_local

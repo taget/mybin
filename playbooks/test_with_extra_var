@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -x
+
+ansible-playbook -i hosts prepare_env.yaml --extra-vars "host=${1:-nuc}" --ask-sudo-pass -vvvv

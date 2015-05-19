@@ -1,0 +1,23 @@
+[core]
+    editor = vim
+[alias]
+    glog = log --graph  --abbrev-commit --date=relative --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%Cblue%an%Creset%Cgreen %cr)%Creset '
+    s = show
+    st = status
+    l = log --pretty=oneline -n 20 --graph --abbrev-commit
+    ll = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
+    b = branch
+    ci = commit
+    ca = commit -am
+    pl = pull
+    ps = push
+    co = checkout
+
+
+[user]
+    name = Eli Qiao
+    email = liyong.qiao@intel.com
+[gitreview]
+    username = Eli
+
+
