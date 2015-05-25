@@ -49,7 +49,7 @@ class MyEventHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         # This will be handled by on_modified
-        # ignor this to avoid duplicated event.
+        # ignore this event to avoid duplicated event.
         pass
 
     def on_deleted(self, event):
