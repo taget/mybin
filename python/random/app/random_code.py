@@ -6,8 +6,8 @@ def get_random(length):
     """
     if length == 0:
         return 0
-    left = (length - 1) * 10
-    right = length * 10 - 1
+    left = 10 ** (length -1)
+    right = 10 ** length  - 1
 
     return random.randint(left, right)
 

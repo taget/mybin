@@ -31,13 +31,15 @@ def index():
     print app.app_context()
     return "hello world!"
 
-#create a random code
+#create a random code with a timeout window
 @app.route('/random', methods=['POST'])
 def create_random():
-    #if not request.json or not 'length' in request.json:
-    #    abort(400)
-    length = 10
-    timeout = 10
+    print request.json
+    if not request.json or not 'length' in request.json:
+        abort(400)
+    req = request.json
+    length = req.get('length')
+    timeout = req.get('time_out', 10)
     code = random_manager.create_random(length, timeout=timeout)
 
     return jsonify({'code': code}), 201
