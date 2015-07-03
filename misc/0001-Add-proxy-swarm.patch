@@ -1,0 +1,76 @@
+From dda6ce04d9d571ec71839c3214e1dcffb37138e4 Mon Sep 17 00:00:00 2001
+From: Eli Qiao <liyong.qiao@intel.com>
+Date: Wed, 1 Jul 2015 16:57:55 +0800
+Subject: [PATCH] Add proxy swarm
+
+This patch add intel proxy for docker deamon and swarm master/agent
+
+Change-Id: I13a72de77ff2d287b76a31135b548600a08e5889
+---
+ .../docker-swarm/fragments/disable-selinux.sh       | 21 +++++++++++++++++++++
+ .../fragments/write-swarm-agent-service.yaml        |  4 +++-
+ .../fragments/write-swarm-manager-service.yaml      |  4 +++-
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/magnum/templates/docker-swarm/fragments/disable-selinux.sh b/magnum/templates/docker-swarm/fragments/disable-selinux.sh
+index 888c0e4..120e788 100644
+--- a/magnum/templates/docker-swarm/fragments/disable-selinux.sh
++++ b/magnum/templates/docker-swarm/fragments/disable-selinux.sh
+@@ -6,3 +6,24 @@ setenforce 0
+ sed -i '
+   /^SELINUX=/ s/=.*/=permissive/
+ ' /etc/selinux/config
++
++echo "adding proxy"
++
++mkdir /etc/systemd/system/docker.service.d/
++
++cat >/etc/systemd/system/docker.service.d/proxy.conf << EOF
++
++[Service]
++
++Environment=HTTP_PROXY=http://xxxx:yy/
++
++EOF
++
++systemctl daemon-reload
++systemctl --no-block restart docker.service
++
++cat >> /etc/bashrc <<EOF
++declare -x http_proxy="http://xxxx:yy/"
++declare -x https_proxy="http://xxxx:yy/"
++declare -x no_proxy="192.168.0.1,192.168.0.2,192.168.0.3,192.168.0.4,192.168.0.5"
++EOF
+diff --git a/magnum/templates/docker-swarm/fragments/write-swarm-agent-service.yaml b/magnum/templates/docker-swarm/fragments/write-swarm-agent-service.yaml
+index 90fcea9..d0816e5 100644
+--- a/magnum/templates/docker-swarm/fragments/write-swarm-agent-service.yaml
++++ b/magnum/templates/docker-swarm/fragments/write-swarm-agent-service.yaml
+@@ -16,7 +16,9 @@ write_files:
+       ExecStartPre=-/usr/bin/docker rm swarm-agent
+       ExecStartPre=/usr/bin/docker pull swarm:0.2.0
+       #TODO: roll-back from swarm:0.2.0 to swarm if atomic image can work with latest swarm image
+-      ExecStart=/usr/bin/docker run --name swarm-agent swarm:0.2.0 join --addr $NODE_IP:2375 $DISCOVERY_URL
++      # manager node is 192.168.0.3 and 4,5 are agent node
++      # this is a workaround
++      ExecStart=/usr/bin/docker run -e http_proxy=http://xxxx:yy -e https_proxy=http://10.239.4.160:911 -e no_proxy=192.168.0.3,192.168.0.4,192.168.0.5 --name swarm-agent swarm:0.2.0 join --addr $NODE_IP:2375 $DISCOVERY_URL
+       ExecStop=/usr/bin/docker stop swarm-agent
+       ExecStartPost=/usr/bin/curl -sf -X PUT -H 'Content-Type: application/json' \
+         --data-binary '{"Status": "SUCCESS", "Reason": "Setup complete", "Data": "OK", "UniqueId": "00000"}' \
+diff --git a/magnum/templates/docker-swarm/fragments/write-swarm-manager-service.yaml b/magnum/templates/docker-swarm/fragments/write-swarm-manager-service.yaml
+index b75a846..52ca841 100644
+--- a/magnum/templates/docker-swarm/fragments/write-swarm-manager-service.yaml
++++ b/magnum/templates/docker-swarm/fragments/write-swarm-manager-service.yaml
+@@ -16,7 +16,9 @@ write_files:
+       ExecStartPre=-/usr/bin/docker rm swarm-manager
+       ExecStartPre=/usr/bin/docker pull swarm:0.2.0
+       #TODO: roll-back from swarm:0.2.0 to swarm if atomic image can work with latest swarm image
+-      ExecStart=/usr/bin/docker run --name swarm-manager -p 2376:2375 swarm:0.2.0 manage -H tcp://0.0.0.0:2375 $DISCOVERY_URL
++      # manager node is 192.168.0.3 and 4,5 are agent node
++      # this is a workaround
++      ExecStart=/usr/bin/docker run -e http_proxy=http://xxxx:yy -e https_proxy=http://10.239.4.160:911 -e no_proxy=192.168.0.3,192.168.0.4,192.168.0.5 --name swarm-manager -p 2376:2375 swarm:0.2.0 manage -H tcp://0.0.0.0:2375 $DISCOVERY_URL
+       ExecStop=/usr/bin/docker stop swarm-manager
+       ExecStartPost=/usr/bin/curl -sf -X PUT -H 'Content-Type: application/json' \
+         --data-binary '{"Status": "SUCCESS", "Reason": "Setup complete", "Data": "OK", "UniqueId": "00000"}' \
+-- 
+1.9.1
+
