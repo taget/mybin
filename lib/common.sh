@@ -65,3 +65,29 @@ function get_real_var_name()
 }
 
 
+# given a started ip
+# compute a list of ip address
+# follow result would be
+# NO_PROXY=192.168.0.3,192.168.0.4,192.168.0.5,192.168.0.6
+
+NODE_COUNT="3"
+SWARM_MASTER_IP="192.168.0.3"
+NO_PROXY=$SWARM_MASTER_IP
+
+function compute() {
+   local i=$NODE_COUNT
+   tmp_ip=$(echo $SWARM_MASTER_IP | awk -F. '{print $4}')
+   ip_prefix=$(echo $SWARM_MASTER_IP | grep -Eo '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.')
+   for (( ; ; )) do
+       if [[ $i -eq 0 ]];
+       then
+           break
+       fi
+       i=$(($i - 1))
+       tmp_ip=$(($tmp_ip + 1))
+       NO_PROXY=${NO_PROXY}","${ip_prefix}${tmp_ip}
+   done
+}
+
+compute
+
