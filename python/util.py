@@ -8,7 +8,7 @@
 import os,glob
 import tarfile
 import gzip
-import string 
+import string
 import shutil
 import traceback
 import time
@@ -22,7 +22,7 @@ class UtilException(Exception):
 def get_systime():
     return str(time.time())
 
-# remove a file    
+# remove a file
 def remove_file(path):
     if os.path.exists(path):
         os.remove(path)
@@ -47,7 +47,7 @@ def get_FolderSize(folder):
         return total_size
     except:
         raise UtilException('%s is not exists ' % folder)
-        
+
 # linux
 #src : src dir
 #dst : dst dir
@@ -61,7 +61,7 @@ def zip_dir(dirname, zipfilename):
         for root, dirs, files in os.walk(dirname):
             for name in files:
                 filelist.append(os.path.join(root, name))
-        
+
     zf = zipfile.ZipFile(zipfilename, "w", zipfile.zlib.DEFLATED)
     for tar in filelist:
         arcname = tar[len(dirname):]
@@ -69,6 +69,15 @@ def zip_dir(dirname, zipfilename):
         zf.write(tar,arcname)
     zf.close()
 
+# PATH = '/home/'
+# reg = '*.py'
+
+def list_files_recursively(PATH, reg)
+
+    import os
+    from glob import glob
+    result = [y for x in os.walk(PATH) for y in glob(os.path.join(x[0], reg))]
+    return result
 
 
 def test():
