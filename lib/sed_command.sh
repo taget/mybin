@@ -31,3 +31,12 @@ function remove_comment()
    filename=$1
    sed s/^#// $filename
 }
+
+
+#3. append 
+
+#
+function append_to()
+{
+    echo "hello_world" | sed 's/\(^hello.*\)/\1 myworld/'
+}
