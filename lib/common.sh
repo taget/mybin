@@ -91,3 +91,9 @@ function compute() {
 
 compute
 
+
+#x=1, y=0, return 1
+function bitwise_or() {
+    x=$[$x|$y]
+    echo $x
+}
