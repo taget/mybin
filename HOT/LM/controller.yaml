@@ -39,9 +39,7 @@ resources:
     type: "OS::Heat::SoftwareConfig"
     properties:
       group: ungrouped
-      config:
-        str_replace:
-          template: {get_file: fragments/write-apt-conf.yaml}
+      config: {get_file: fragments/write-apt-conf.yaml}
 
   config_redsocks:
     type: "OS::Heat::SoftwareConfig"

@@ -2,4 +2,4 @@
 
 set -x
 
-ansible-playbook -i hosts prepare_env.yaml --extra-vars "host=${1:-nuc}" --ask-sudo-pass -vvvv
+ansible-playbook -i hosts prepare_env.yaml --extra-vars "host=${1:-nuc} user=${2:-taget}" --ask-sudo-pass -vvvv

@@ -2,9 +2,9 @@
 
 - name: prepare an new install environment
   hosts: "{{ host }}"
-  sudo: True 
+  sudo: True
   gather_facts: False
-  remote_user: taget
+  sudo_user: "{{ user }}"
 
   tasks:
     - name: hahaha {{ host }}
@@ -14,15 +14,15 @@
     - name: copy apt.conf
       template: src=src/apt.conf dest=/etc/apt/apt.conf
 
-    - name: update apt cache
-      apt:
-        update_cache: yes
+#    - name: update apt cache
+#      apt:
+#        update_cache: yes
 
     - name: copy .vimrc
-      template: src=src/.vimrc dest=/home/taget/
+      template: src=src/.vimrc dest=~/
 
     - name: copy .gitconfig
-      template: src=src/.gitconfig dest=/home/taget/.gitconfig
+      template: src=src/.gitconfig dest=~/
 
     - name: copy iptable rule
       template:
@@ -30,6 +30,13 @@
         dest: /tmp
         mode: 0755
 
+- name: prepare configurtion on remote server
+  hosts: "{{ host }}"
+  sudo: True
+  gather_facts: False
+  sudo_user: root
+
+  tasks:
     - name: apply ipatble rule
       command: /tmp/configur_iptable.sh
 
