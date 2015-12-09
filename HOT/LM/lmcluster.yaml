@@ -1,0 +1,165 @@
+heat_template_version: 2013-05-23
+
+description: >
+  Will boot a cluster with 1 controller and n compute node.
+
+parameters:
+
+  #
+  # REQUIRED PARAMETERS
+  #
+  ssh_key_name:
+    type: string
+    description: name of ssh key to be provisioned on our server
+
+  external_network:
+    type: string
+    description: uuid/name of a network to use for floating ip addresses
+
+  # OPTIONAL PARAMETERS
+  #
+  server_image:
+    type: string
+    default: ubuntu
+    description: glance image used to boot the server
+
+  server_flavor:
+    type: string
+    default: m1.small
+    description: flavor to use when booting the server
+
+  dns_nameserver:
+    type: string
+    description: address of a dns nameserver reachable in your environment
+    default: 10.238.157.49
+
+  number_of_controllers:
+    type: string
+    description: how many controller to spawn
+    default: 1
+
+  number_of_nodes:
+    type: string
+    description: how many compute to spawn
+    default: 1
+
+  fixed_network_cidr:
+    type: string
+    description: network range for fixed ip network
+    default: "192.168.0.0/24"
+
+resources:
+
+  ######################################################################
+  #
+  # network resources.  allocate a network and router for our server.
+  # it would also be possible to take advantage of existing network
+  # resources (and have the deployer provide network and subnet ids,
+  # etc, as parameters), but I wanted to minmize the amount of
+  # configuration necessary to make this go.
+
+  fixed_network:
+    type: "OS::Neutron::Net"
+
+  # This is the subnet on which we will deploy our server.
+  fixed_subnet:
+    type: "OS::Neutron::Subnet"
+    properties:
+      cidr: {get_param: fixed_network_cidr}
+      network_id:
+        get_resource: fixed_network
+      dns_nameservers:
+        - get_param: dns_nameserver
+
+  # create a router attached to the external network provided as a
+  # parameter to this stack.
+  extrouter:
+    type: "OS::Neutron::Router"
+    properties:
+      external_gateway_info:
+        network:
+          get_param: external_network
+
+  # attached fixed_subnet to our extrouter router.
+  extrouter_inside:
+    type: "OS::Neutron::RouterInterface"
+    properties:
+      router_id:
+        get_resource: extrouter
+      subnet_id:
+        get_resource:
+          fixed_subnet
+
+  ######################################################################
+  #
+  # security groups.  we need to permit network traffic of various
+  # sorts.
+  #
+
+  secgroup_controller:
+    type: "OS::Neutron::SecurityGroup"
+    properties:
+      rules:
+        - protocol: icmp
+        - protocol: tcp
+        - protocol: udp
+
+  ######################################################################
+
+  controllers:
+    type: "OS::Heat::ResourceGroup"
+    depends_on:
+      - extrouter_inside
+    properties:
+      count: {get_param: number_of_controllers}
+      resource_def:
+        type: controller.yaml
+        properties:
+          ssh_key_name: {get_param: ssh_key_name}
+          server_image: {get_param: server_image}
+          server_flavor: {get_param: server_flavor}
+          fixed_network_id: {get_resource: fixed_network}
+          fixed_subnet_id: {get_resource: fixed_subnet}
+          external_network: {get_param: external_network}
+          secgroup_controller_id: {get_resource: secgroup_controller}
+
+  compute_nodes:
+    type: "OS::Heat::ResourceGroup"
+    depends_on:
+      - extrouter_inside
+      - controllers
+    properties:
+      count: {get_param: number_of_nodes}
+      resource_def:
+        type: node.yaml
+        properties:
+          ssh_key_name: {get_param: ssh_key_name}
+          server_image: {get_param: server_image}
+          server_flavor: {get_param: server_flavor}
+          fixed_network_id: {get_resource: fixed_network}
+          fixed_subnet_id: {get_resource: fixed_subnet}
+          external_network: {get_param: external_network}
+          secgroup_node_id: {get_resource: secgroup_controller}
+
+outputs:
+
+  controllers_private:
+    value: {get_attr: [controllers, controller_ip]}
+    description: >
+      This is a list of the "private" addresses of all the controllers.
+
+  controllers:
+    value: {get_attr: [controllers, controller_external_ip]}
+    description: >
+      This is a list of "public" ip addresses of all controllers.
+
+  compute_nodes_private:
+    value: {get_attr: [compute_nodes, node_ip]}
+    description: >
+      This is a list of the "private" addresses of all the compute nodes.
+
+  compute_nodes:
+    value: {get_attr: [compute_nodes, node_external_ip]}
+    description: >
+      This is a list of the "public" addresses of all the compute nodes. Use
+      these addresses to, e.g., log into the nodes.

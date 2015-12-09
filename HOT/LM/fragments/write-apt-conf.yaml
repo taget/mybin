@@ -1,0 +1,10 @@
+#cloud-config
+merge_how: dict(recurse_array)+list(append)
+write_files:
+  - path: /etc/apt/apt.conf
+    owner: "root:root"
+    permissions: "0644"
+    content: |
+      Acquire::http::proxy "http://child-prc.intel.com:911/";
+      Acquire::https::proxy "http://child-prc.intel.com:911/";
+      Acquire::socks::proxy "socks://child-prc.intel.com:1080/";

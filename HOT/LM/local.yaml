@@ -1,0 +1,4 @@
+parameters:
+  ssh_key_name: testkey
+  external_network: public
+  server_image: centos 

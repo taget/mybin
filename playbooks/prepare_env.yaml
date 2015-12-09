@@ -14,9 +14,9 @@
     - name: copy apt.conf
       template: src=src/apt.conf dest=/etc/apt/apt.conf
 
-#    - name: update apt cache
-#      apt:
-#        update_cache: yes
+    - name: update apt cache
+      apt:
+        update_cache: yes
 
     - name: copy .vimrc
       template: src=src/.vimrc dest=/home/taget/

@@ -1,0 +1,107 @@
+heat_template_version: 2013-05-23
+
+description: >
+  This is a nested stack that defines a openstack compute node.
+
+parameters:
+
+  server_image:
+    type: string
+    description: glance image used to boot the server
+
+  server_flavor:
+    type: string
+    description: flavor to use when booting the server
+
+  ssh_key_name:
+    type: string
+    description: name of ssh key to be provisioned on our server
+
+  external_network:
+    type: string
+    description: uuid/name of a network to use for floating ip addresses
+
+  fixed_network_id:
+    type: string
+    description: Network from which to allocate fixed addresses.
+
+  fixed_subnet_id:
+    type: string
+    description: Subnet from which to allocate fixed addresses.
+
+  secgroup_node_id:
+    type: string
+    description: ID of the security group for controller.
+
+resources:
+
+  write_apt_proxy:
+    type: "OS::Heat::SoftwareConfig"
+    properties:
+      group: ungrouped
+      config:
+        str_replace:
+          template: {get_file: fragments/write-apt-conf.yaml}
+
+  config_redsocks:
+    type: "OS::Heat::SoftwareConfig"
+    properties:
+      group: ungrouped
+      config: {get_file: fragments/install-conf-redsocks.sh}
+
+  node_init:
+    type: "OS::Heat::MultipartMime"
+    properties:
+      parts:
+        - config: {get_resource: write_apt_proxy}
+        - config: {get_resource: config_redsocks}
+
+  ######################################################################
+  #
+
+  compute_nodes:
+    type: "OS::Nova::Server"
+    properties:
+      image:
+        get_param: server_image
+      flavor:
+        get_param: server_flavor
+      key_name:
+        get_param: ssh_key_name
+      user_data_format: RAW
+      user_data: {get_resource: node_init}
+      networks:
+        - port:
+            get_resource: compute_node_eth0
+
+  compute_node_eth0:
+    type: "OS::Neutron::Port"
+    properties:
+      network_id:
+        get_param: fixed_network_id
+      security_groups:
+        - {get_param: secgroup_node_id}
+      fixed_ips:
+        - subnet_id:
+            get_param: fixed_subnet_id
+
+  compute_node_floating:
+    type: "OS::Neutron::FloatingIP"
+    properties:
+      floating_network:
+        get_param: external_network
+      port_id:
+        get_resource: compute_node_eth0
+
+outputs:
+
+  controller_ip:
+    value: {get_attr: [compute_node_eth0, fixed_ips, 0, ip_address]}
+    description: >
+      This is the "private" addresses of compute node.
+
+  controller_external_ip:
+    value: {get_attr: [compute_node_floating, floating_ip_address]}
+    description: >
+      This is the "public" ip addresses of compute node.
+
