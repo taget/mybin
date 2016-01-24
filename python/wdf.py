@@ -34,7 +34,7 @@ from threading import Timer
 DEBUG = True
 
 CMD_LIST = ('','h', 'help', 'w', 'l', 'timer', 'q', 't')
-MSG_TO_SEND  = "我要看唐探11572011"
+MSG_TO_SEND  = "我要看唐探11568533"
 #MSG_TO_SEND  = "苟富贵，勿相忘"
 TIME_LIST =(time.mktime(time.strptime('2016-01-18 11:00:00','%Y-%m-%d %H:%M:%S')),
             time.mktime(time.strptime('2016-01-19 11:00:00','%Y-%m-%d %H:%M:%S')),
@@ -49,10 +49,17 @@ TIME_LIST = (
            )
 # this list will only run once when now == time in list
 ONE_TIME = (
-    time.mktime(time.strptime('2016-01-20 10:59:59','%Y-%m-%d %H:%M:%S')),
+#            time.mktime(time.strptime('2016-01-20 10:59:59','%Y-%m-%d %H:%M:%S')),
 #            time.mktime(time.strptime('2016-01-19 11:00:00','%Y-%m-%d %H:%M:%S')),
 #            time.mktime(time.strptime('2016-01-20 11:00:00','%Y-%m-%d %H:%M:%S')),
            )
+
+MSG_I_UNDERSTAND = {
+                    u"你好": "你好！我是乔总的秘书，有什么吩咐，试着说，\"帮助我\" \"求求你\"",
+                    "hello": "你好！我是乔总的秘书，有什么吩咐，试着说，\"帮助我\" \"求求你\"",
+                    u"求求你": "好的，如果有急事请给我的主人打电话吧 156 118 00665！",
+                    u"帮助我":"回复\"请你吃饭\"等友好的语言您将会得到乔总的亲切接待",
+                    }
 
 
 MAX_GROUP_NUM = 35  # 每组人数
@@ -73,10 +80,13 @@ wxuin = ''
 pass_ticket = ''
 deviceId = 'e000000000000001'
 
+_r = 0
+
 BaseRequest = {}
 
 ContactList = []
 ContactList_detail = {}
+User_detail = {}
 My = []
 SyncKey = ''
 SyncKey_List = []
@@ -185,6 +195,7 @@ def waitForLogin():
         tip = 0
     elif code == '200':  # 已登录
         print('正在登录...')
+        print(data)
         regx = r'window.redirect_uri="(\S+?)";'
         pm = re.search(regx, data)
         redirect_uri = pm.group(1) + '&fun=new'
@@ -201,7 +212,7 @@ def waitForLogin():
 
 
 def login():
-    global skey, wxsid, wxuin, pass_ticket, BaseRequest
+    global skey, wxsid, wxuin, pass_ticket, BaseRequest, _r
 
     request = getRequest(url=redirect_uri)
     response = wdf_urllib.urlopen(request)
@@ -246,6 +257,8 @@ def login():
         u'Skey': skey,
         u'DeviceID': deviceId,
     }
+
+    _r = int(float(time.time())/1000)
 
     return True
 
@@ -436,56 +449,145 @@ def addMember(ChatRoomName, UserNames):
 # ..
 def syncCheck():
     url = base_uri + '/synccheck?'
+#    url = "https://webpush.weixin.qq.com/cgi-bin/mmwebwx-bin/synccheck?"
+    global _r
+    _r = _r + 1
+    r_time =int(float(time.time())/1000)
     params = {
         'skey': BaseRequest['Skey'],
         'sid': BaseRequest['Sid'],
         'uin': BaseRequest['Uin'],
         'deviceId': BaseRequest['DeviceID'],
         'synckey': SyncKey,
-        'r': int(time.time()),
+        'f': 'json',
+        'r' : r_time,
+        '_': _r
     }
 
+#    print(url)
+#    print(params)
+#    print('++body======+')
+#    print(body)
+#
     request = getRequest(url=url + urlencode(params))
+#    print(request.get_full_url())
     response = wdf_urllib.urlopen(request)
     data = response.read().decode('utf-8', 'replace')
 
     # window.synccheck={retcode:"0",selector:"2"}
     # FIXME(eliqiao):
     # data is unicode string
-    if data[27] == "0" and data[40] == "6":
-        return True
-    if data[27] != '0':
+#    print(data)
+    json_obj = json.loads(data)
+#    print(json_obj['retcode'])
+    if json_obj['retcode'] != '0':
         raise
+    else:
+        if json_obj['selector'] == '2':
+            return True
+        elif json_obj['selector'] == '0':
+            return False
+
     return False
 
-def getMsg():
+
+def log_msg(msg, f=None, date=None):
+
+    now_time = time.strftime("%H:%M:%S", time.localtime())
+
+    if f:
+        file_name = f
+    else:
+        if date is not None:
+            timeArray = time.localtime(date)
+        else:
+            timeArray = time.localtime()
+        file_name = time.strftime("%Y-%m-%d", timeArray)
+
+    with open(file_name, 'a') as fh:
+        fh.write(now_time + ':' + msg)
+
+def getMsg(only_friend=True, log_to_file=False):
     url = base_uri + '/webwxsync?'
 
+    global SyncKey_List
     r = int(time.time())
     params = {
         'sid': BaseRequest['Sid'],
-        'r': r,
+        'skey': BaseRequest['Skey'],
+        'pass_ticket': pass_ticket,
     }
 
 #    print(params)
 
     body = {
-        'BaseRequest': {'Uin': BaseRequest['Uin'], 'Sid': BaseRequest['Sid']},
+        'BaseRequest': BaseRequest,
         'SyncKey': SyncKey_List,
-        'rr': r
+        'rr': -r
     }
-
+#    print(body)
     request = getRequest(url=url + urlencode(params), data=json.dumps(body))
+#    print(request.get_full_url())
     response = wdf_urllib.urlopen(request)
     data = response.read().decode('utf-8', 'replace')
 
-    print(data)
+    json_obj = json.loads(data)
+    Baseresp = json_obj['BaseResponse']
+
+    msg_to_file = ""
+
+    if Baseresp['Ret'] != 0:
+        msg_to_file = u"接受消息异常!\n"
+        if log_to_file:
+            log_msg(msg_to_file)
+        else:
+            print(msg_to_file)
+        return
+
+    msg_count = json_obj['AddMsgCount']
+    if msg_count > 0:
+        msg_to_file = u"收到[%d]条消息:\n" % msg_count
+
+    msg_list = json_obj['AddMsgList']
+    sync_key = json_obj['SyncKey']
+#    print(sync_key)
+    # NOTE(eliqiao): update SyncKey_List to indicate you have read this MSG.
+    SyncKey_List = sync_key
+
+    for msg in msg_list:
+        print(msg['FromUserName'])
+        if msg['FromUserName'] in User_detail:
+            nick_name = User_detail[msg['FromUserName']]
+        else:
+            print("NO")
+            msg_to_file += u"忽略了来自%s的消息，可能它是公众号或者群\n" % msg['FromUserName']
+            continue
+
+        # text message
+        if msg['MsgType'] == 1:
+            msg_to_file += u"%s说: %s\n" % (nick_name, msg['Content'])
+            if msg['Content'] in MSG_I_UNDERSTAND:
+                sendMsg(My['UserName'], nick_name, MSG_I_UNDERSTAND[msg['Content']])
+                msg_to_file += u"回复%s了:%s" % (nick_name, MSG_I_UNDERSTAND[msg['Content']])
+            #FIXME follow logic is not correct
+      #      else:
+      #          if nick_name != My['UserName']:
+      #              sendMsg(My['UserName'], nick_name, "收到！")
+        else:
+            msg_to_file += u"%s可能说了段语音\n" % nick_name
+
+    if log_to_file:
+        if len(msg_to_file) > 0:
+            log_msg(msg_to_file)
+    else:
+        print(msg_to_file)
 
 def run_sync():
 
     while True:
-        syncCheck()
-        time.sleep(30)
+        if syncCheck():
+            getMsg(log_to_file=True)
+        time.sleep(5)
 
 def run_job(tm, name, msg=None, user_list=[], interval=10, sleep_interval=60):
 
@@ -520,10 +622,10 @@ def run_job(tm, name, msg=None, user_list=[], interval=10, sleep_interval=60):
                 return
 
 def set_timer():
-    print("will start timer after 5s")
+    print("will start timer after 0s")
     #NOTE(eliqiao) we will get a exception if we lost the authorize from wxserver
     #we need to notify master process to exit here
-    Timer(5, run_sync,()).start()
+    Timer(0, run_sync,()).start()
 
 def set_jobs():
 
@@ -575,11 +677,12 @@ def main():
     # setup a timer to add
     set_timer()
 
-    MemberList = webwxgetcontact(all=True)
+    MemberList = webwxgetcontact(all=False)
 
     MemberCount = len(MemberList)
     for m in MemberList:
         ContactList_detail[m['NickName'].encode('utf-8')] = m['UserName']
+        User_detail[m['UserName']] = m['NickName'].encode('utf-8')
 
     # setup timers for run specify message sending task
 
