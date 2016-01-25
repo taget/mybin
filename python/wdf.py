@@ -342,8 +342,8 @@ def webwxgetcontact(all=False):
             MemberList.remove(Member)
         elif Member['UserName'].find('@@') != -1:  # 群聊
             MemberList.remove(Member)
-        elif Member['UserName'] == My['UserName']:  # 自己
-            MemberList.remove(Member)
+#        elif Member['UserName'] == My['UserName']:  # 自己
+#            MemberList.remove(Member)
 
     return MemberList
 
@@ -471,22 +471,28 @@ def syncCheck():
 #
     request = getRequest(url=url + urlencode(params))
 #    print(request.get_full_url())
-    response = wdf_urllib.urlopen(request)
-    data = response.read().decode('utf-8', 'replace')
+    try:
+        response = wdf_urllib.urlopen(request)
+        data = response.read().decode('utf-8', 'replace')
+    except Exception:
+        print("EOF error!")
+        pass
 
     # window.synccheck={retcode:"0",selector:"2"}
     # FIXME(eliqiao):
     # data is unicode string
 #    print(data)
     json_obj = json.loads(data)
+    print(json_obj)
 #    print(json_obj['retcode'])
     if json_obj['retcode'] != '0':
         raise
     else:
-        if json_obj['selector'] == '2':
-            return True
-        elif json_obj['selector'] == '0':
+        if json_obj['selector'] == '0':
             return False
+        else:
+            # FIXME (eliqiao) there is one case that selector = 3, what's mean？
+            return json_obj['selector']
 
     return False
 
@@ -528,8 +534,15 @@ def getMsg(only_friend=True, log_to_file=False):
 #    print(body)
     request = getRequest(url=url + urlencode(params), data=json.dumps(body))
 #    print(request.get_full_url())
-    response = wdf_urllib.urlopen(request)
-    data = response.read().decode('utf-8', 'replace')
+
+    try:
+        response = wdf_urllib.urlopen(request)
+        data = response.read().decode('utf-8', 'replace')
+    #
+    #FIXME there will be SSL EOF exception
+    except Exception:
+        msg_to_file = u'EOF error!\n'
+        pass
 
     json_obj = json.loads(data)
     Baseresp = json_obj['BaseResponse']
@@ -555,26 +568,47 @@ def getMsg(only_friend=True, log_to_file=False):
     SyncKey_List = sync_key
 
     for msg in msg_list:
+        ret_msg = True
+        from_user_name = msg['FromUserName']
+        nick_name = None
         print(msg['FromUserName'])
         if msg['FromUserName'] in User_detail:
             nick_name = User_detail[msg['FromUserName']]
         else:
-            print("NO")
-            msg_to_file += u"忽略了来自%s的消息，可能它是公众号或者群\n" % msg['FromUserName']
-            continue
+            if from_user_name != My['UserName']:
+                msg_to_file += u"忽略了来自%s的消息，可能它是公众号或者群\n" % msg['FromUserName']
+                ret_msg = False
 
         # text message
+        # 1 text message/location
+        # 3 image
+        # 34 voice
+        # 10000 money
+        # 51 自己给自己发的同步消息？
+        print(msg['MsgType'])
         if msg['MsgType'] == 1:
             msg_to_file += u"%s说: %s\n" % (nick_name, msg['Content'])
-            if msg['Content'] in MSG_I_UNDERSTAND:
+            if msg['Content'] in MSG_I_UNDERSTAND and ret_msg:
                 sendMsg(My['UserName'], nick_name, MSG_I_UNDERSTAND[msg['Content']])
                 msg_to_file += u"回复%s了:%s" % (nick_name, MSG_I_UNDERSTAND[msg['Content']])
             #FIXME follow logic is not correct
       #      else:
       #          if nick_name != My['UserName']:
       #              sendMsg(My['UserName'], nick_name, "收到！")
+        # Money
+        elif msg['MsgType'] == 10000:
+            msg_to_file += u"收到%s发来的红包" % (nick_name or from_user_name)
+            sendMsg(My['UserName'], My['NickName'], "收到红包")
+            #TODO(eliqiao): reminder and send message to rush for money
+            print(msg)
+        elif msg['MsgType'] == 51:
+            pass
+        elif msg['MsgType'] == 3:
+            msg_to_file += u"%s发了张图片\n" % nick_name
+            pass
         else:
             msg_to_file += u"%s可能说了段语音\n" % nick_name
+            print(msg)
 
     if log_to_file:
         if len(msg_to_file) > 0:
@@ -772,9 +806,13 @@ def main():
 def sendMsg(MyUserName, ToNickName, msg):
 
     if ToNickName not in ContactList_detail:
-        print("User [%s] not found" % ToNickName)
-        return 1
-    ToUserName = ContactList_detail[ToNickName]
+        if ToNickName == My["NickName"]:
+            ToUserName = My['UserName']
+        else:
+            print("User [%s] not found" % ToNickName)
+            return 1
+    else:
+        ToUserName = ContactList_detail[ToNickName]
     url = base_uri + '/webwxsendmsg?pass_ticket=%s' % (pass_ticket)
 #    import ipdb
 #    ipdb.set_trace()
