@@ -1,0 +1,21 @@
+---
+- name: apt source mirror
+  copy: src=sources.list.{{ UBUNTU_VERSION }} dest=/etc/apt/sources.list
+
+#- name: update apt cache
+#  apt: update_cache=yes
+
+#- name: install redsocks
+#  apt: name=redsocks state=present
+
+- name: proxy.sh
+  copy: src=proxy.sh dest=/bin/proxy.sh owner=root group=root mode=755
+
+- name: redsocks.conf
+  copy: src=redsocks.conf dest=/etc/redsocks.conf owner=root group=root mode=644
+
+- name: sysctl route_local
+  lineinfile: dest=/etc/sysctl.conf line="net.ipv4.conf.all.route_localnet = 1" state=present
+
+- name: sysctl route_local_default
+  lineinfile: dest=/etc/sysctl.conf line="net.ipv4.conf.default.route_localnet = 1" state=present
