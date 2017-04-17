@@ -308,6 +308,26 @@ def webwxinit():
     return True
 
 
+def webwxgetotccontact():
+
+    url = base_uri + '/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s' % (int(time.time()), pass_ticket)
+    params = {
+        'BaseRequest': BaseRequest,
+        "Count": 1,
+        "List": [{"UserName": u"@@f2748eacce47b073bc298687bfccd8ae46db9a90e4d0d72db57fac48e41c6543", "EncryChatRoomId": ""}]
+        }
+    print(url)
+    print(params)
+    json_obj = json.dumps(params)#.encode('utf-8')#ensure_ascii=False防止中文乱码
+    #request = wdf_urllib.Request(url=url, data=json_obj)
+    #print(json_obj)
+    request = getRequest(url=url, data=json_obj)
+    request.add_header('ContentType', 'application/json; charset=UTF-8')
+    response = wdf_urllib.urlopen(request)
+    print (response.read())
+    #data = response.read().decode('utf-8', 'replace')
+    #print(data)
+
 def webwxgetcontact(all=False):
 
     url = base_uri + '/webwxgetcontact?pass_ticket=%s&skey=%s&r=%s' % (pass_ticket, skey, int(time.time()))
@@ -324,7 +344,6 @@ def webwxgetcontact(all=False):
 
     # print(data)
     data = data.decode('utf-8', 'replace')
-
     dic = json.loads(data)
     MemberList = dic['MemberList']
 
@@ -709,16 +728,22 @@ def main():
         return
 
     # setup a timer to add
-    set_timer()
-
-    MemberList = webwxgetcontact(all=False)
+    # set_timer()
+    webwxgetotccontact()
+    return
+    MemberList = webwxgetcontact(all=True)
 
     MemberCount = len(MemberList)
     for m in MemberList:
         ContactList_detail[m['NickName'].encode('utf-8')] = m['UserName']
         User_detail[m['UserName']] = m['NickName'].encode('utf-8')
+        if m['NickName'] == "OTC在职":
+            print(m)
+
 
     # setup timers for run specify message sending task
+
+    return
 
     set_jobs()
 
@@ -801,6 +826,8 @@ def main():
     print('---------------------------------------------')
 
 
+def BatGetcontact():
+    pass
 
 # 根据指定的Username发消息
 def sendMsg(MyUserName, ToNickName, msg):
